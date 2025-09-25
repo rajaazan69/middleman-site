@@ -5,7 +5,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Your guild (server) ID where you want to fetch join date & roles
-const GUILD_ID = "YOUR_SERVER_ID"; // <- replace with your Discord server ID
+const GUILD_ID = "1333004910513623112"; // <- replace with your Discord server ID
 
 // Serve static files (index.html, css, etc.)
 app.use(express.static("public"));
