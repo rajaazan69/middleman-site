@@ -10,7 +10,7 @@ body {
 
 /* Banner */
 .banner {
-  background: linear-gradient(135deg, #ff512f, #dd2476);
+  background: linear-gradient(135deg, #8b0000, #ff0000); /* Dark red → Bright red */
   color: #fff;
   padding: 60px 20px;
   border-bottom: 4px solid #000;
@@ -37,7 +37,7 @@ body {
 .section h1 {
   font-size: 2em;
   margin-bottom: 25px;
-  border-bottom: 2px solid #ff512f;
+  border-bottom: 2px solid #ff0000;
   display: inline-block;
   padding-bottom: 5px;
 }
@@ -75,7 +75,7 @@ body {
 .card h2 {
   margin: 0;
   font-size: 1.2em;
-  color: #ffafbd;
+  color: #ff4c4c; /* Brighter red for card titles */
 }
 .card p {
   margin: 4px 0 0;
@@ -85,10 +85,10 @@ body {
 
 /* Accent Borders */
 .admin-card {
-  border-left: 5px solid #ff512f; /* Red accent for Admins */
+  border-left: 5px solid #ff0000; /* Bold red for Admins */
 }
 .middleman-card {
-  border-left: 5px solid #24c6dc; /* Blue accent for Middlemen */
+  border-left: 5px solid #b22222; /* Dark red for Middlemen */
 }
 
 /* Buttons */
@@ -96,12 +96,12 @@ body {
   display: inline-block;
   margin-top: 10px;
   padding: 8px 15px;
-  background: #ff512f;
+  background: linear-gradient(135deg, #8b0000, #ff0000); /* Red gradient */
   color: white;
   text-decoration: none;
   border-radius: 6px;
   transition: background 0.3s ease;
 }
 .btn:hover {
-  background: #dd2476;
+  background: linear-gradient(135deg, #ff0000, #8b0000);
 }
