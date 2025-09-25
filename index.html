@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Middleman Service</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Trusted Middlemen</h1>
+  <div id="cards"></div>
+
+  <script>
+    async function loadUser(id) {
+      const res = await fetch(`/api/user/${id}`);
+      return res.json();
+    }
+
+    async function showProfiles() {
+      // Put your admins’ Discord IDs here
+      const ids = ["278452675941629952", "390450884603150336"];
+
+      const container = document.getElementById("cards");
+      for (const id of ids) {
+        const user = await loadUser(id);
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <img src="${user.avatar}"
