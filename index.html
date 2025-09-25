@@ -141,14 +141,13 @@
       div.innerHTML = `
   <img src="${user.avatar}" width="80" height="80">
   <div>
-    <h2>${user.username}${user.discriminator !== "0" ? "#" + user.discriminator : ""}</h2>
-    <p><b>ID:</b> ${user.id}</p>
-    ${user.badges ? `<p><b>Badges:</b> ${user.badges.join(", ")}</p>` : ""}
-    ${user.nitro ? `<p><b>Nitro:</b> ✅</p>` : ""}
-    ${user.joined_at ? `<p><b>Joined:</b> ${new Date(user.joined_at).toLocaleDateString()}</p>` : ""}
-    ${user.roles ? `<p><b>Roles:</b> ${user.roles.join(", ")}</p>` : ""}
-  </div>
-`;
+  <h2>${user.username}${user.discriminator !== "0" ? "#" + user.discriminator : ""}</h2>
+  <p><b>ID:</b> ${user.id}</p>
+  ${user.badges?.length ? `<p><b>Badges:</b> ${user.badges.join(", ")}</p>` : ""}
+  ${user.nitro && user.nitro !== 0 ? `<p><b>Nitro:</b> ✅</p>` : ""}
+  ${user.joined_at ? `<p><b>Joined:</b> ${new Date(user.joined_at).toLocaleDateString()}</p>` : ""}
+  ${user.roles?.length ? `<p><b>Roles:</b> ${user.roles.join(", ")}</p>` : ""}
+</div>
       container.appendChild(div);
     }
   }
