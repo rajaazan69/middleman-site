@@ -64,10 +64,10 @@ app.get("/api/user/:id", async (req, res) => {
 
     // Convert flags → badge names
     const badges = [];
-    for (const [flag, name] of Object.entries(BADGES)) {
-      if ((user.public_flags & flag) === Number(flag)) {
-        badges.push(name);
-      }
+    for (const [flagStr, name] of Object.entries(BADGES)) {
+  const flag = Number(flagStr);
+  if ((user.public_flags & flag) === flag) badges.push(name);
+}
     }
 
     // Convert role IDs → role names
