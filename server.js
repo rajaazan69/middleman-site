@@ -37,7 +37,7 @@ function decodeBadges(flags) {
   return badges;
 }
 
-// Cache guild roles
+// --- Role Cache ---
 let guildRoles = {};
 async function fetchGuildRoles() {
   try {
@@ -47,7 +47,7 @@ async function fetchGuildRoles() {
     if (res.ok) {
       const roles = await res.json();
       guildRoles = Object.fromEntries(roles.map(r => [r.id, r.name]));
-      console.log("✅ Fetched guild roles");
+      console.log("✅ Roles refreshed");
     } else {
       console.error("Failed to fetch guild roles:", res.status);
     }
@@ -55,6 +55,7 @@ async function fetchGuildRoles() {
     console.error("Error fetching guild roles:", err);
   }
 }
+// fetch at startup
 fetchGuildRoles();
 
 // --- Route: User Info ---
@@ -84,6 +85,14 @@ app.get("/api/user/:id", async (req, res) => {
       member = await memberResponse.json();
     }
 
+    // Make sure we have latest role names
+    if (Object.keys(guildRoles).length === 0) {
+      await fetchGuildRoles();
+    }
+
+    // Convert role IDs to names
+    const roleNames = member?.roles?.map(r => guildRoles[r] || r) || [];
+
     res.json({
       id: user.id,
       username: user.username,
@@ -95,9 +104,9 @@ app.get("/api/user/:id", async (req, res) => {
         ? `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.png`
         : null,
       nitro: user.premium_type || 0,
-      badges: decodeBadges(user.public_flags), // fixed
+      badges: decodeBadges(user.public_flags),
       joined_at: member?.joined_at || null,
-      roles: member?.roles?.map(r => guildRoles[r] || r) || [], // fixed
+      roles: roleNames, // now correctly shows "Admin", "Middleman", etc.
     });
   } catch (err) {
     console.error("API error:", err);
