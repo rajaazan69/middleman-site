@@ -3,15 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Middleman Service</title>
-  <link rel="stylesheet" href="style.css">
+  <title>3liyy’s Middleman Service</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .banner {
+      background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+      color: #000;
+      padding: 40px 20px;
+      border-bottom: 4px solid #000;
+    }
+    .banner h1 {
+      margin: 0;
+      font-size: 2.5em;
+      font-weight: bold;
+    }
+    .banner p {
+      margin-top: 10px;
+      font-size: 1.2em;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .section {
+      margin: 40px 0;
+    }
+    .card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px auto;
+      width: 280px;
+      display: inline-block;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+    .card img {
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 15px;
+      background: #000;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Trusted Admins</h1>
-  <div id="admin-cards"></div>
 
-  <h1>Trusted Middlemen</h1>
-  <div id="mm-cards"></div>
+  <!-- Banner Section -->
+  <div class="banner">
+    <h1>3liyy’s Middleman Service</h1>
+    <p>Trusted, safe, and reliable trades — verified middlemen at your service. 
+       We ensure every deal is smooth, fair, and secure so you can trade with peace of mind.</p>
+  </div>
+
+  <!-- Admin Section -->
+  <div class="section">
+    <h1>Admins</h1>
+    <div id="admins"></div>
+  </div>
+
+  <!-- Middlemen Section -->
+  <div class="section">
+    <h1>Middlemen</h1>
+    <div id="middlemen"></div>
+  </div>
+
+  <!-- Servers Section -->
+  <div class="section">
+    <h1>Our Servers</h1>
+    <div id="servers"></div>
+  </div>
 
   <script>
     async function loadUser(id) {
@@ -19,7 +92,7 @@
       return res.json();
     }
 
-    async function showProfiles(ids, containerId) {
+    async function showUsers(ids, containerId) {
       const container = document.getElementById(containerId);
       for (const id of ids) {
         const user = await loadUser(id);
@@ -28,29 +101,43 @@
         div.innerHTML = `
           <img src="${user.avatar}" width="80">
           <div>
-            <h2>${user.username}</h2>
+            <h2>${user.username}#${user.discriminator}</h2>
             <p><b>ID:</b> ${user.id}</p>
-            <p><b>Created:</b> ${user.created}</p>
           </div>
         `;
         container.appendChild(div);
       }
     }
 
-    // IDs of admins
-    const adminIDs = [
-      "278452675941629952", // example admin
-      "390450884603150336"  // example admin
-    ];
+    async function loadServer(id) {
+      const res = await fetch(`/api/server/${id}`);
+      return res.json();
+    }
 
-    // IDs of middlemen
-    const mmIDs = [
-      "123456789012345678", // replace with real middleman IDs
-      "987654321098765432"
-    ];
+    async function showServers() {
+      const serverIDs = [
+        "YOUR_SERVER_ID"
+      ];
+      const container = document.getElementById("servers");
+      for (const id of serverIDs) {
+        const server = await loadServer(id);
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <img src="${server.icon}" width="80">
+          <div>
+            <h2>${server.name}</h2>
+            <p><b>ID:</b> ${server.id}</p>
+            <a href="https://discord.gg/YOURINVITE" class="btn">Join Server</a>
+          </div>
+        `;
+        container.appendChild(div);
+      }
+    }
 
-    showProfiles(adminIDs, "admin-cards");
-    showProfiles(mmIDs, "mm-cards");
+    showUsers(["ADMIN_ID"], "admins");
+    showUsers(["MIDDLEMAN_ID"], "middlemen");
+    showServers();
   </script>
 </body>
 </html>
