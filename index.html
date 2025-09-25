@@ -7,8 +7,11 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h1>Trusted Admins</h1>
+  <div id="admin-cards"></div>
+
   <h1>Trusted Middlemen</h1>
-  <div id="cards"></div>
+  <div id="mm-cards"></div>
 
   <script>
     async function loadUser(id) {
@@ -16,14 +19,38 @@
       return res.json();
     }
 
-    async function showProfiles() {
-      // Put your admins’ Discord IDs here
-      const ids = ["278452675941629952", "390450884603150336"];
-
-      const container = document.getElementById("cards");
+    async function showProfiles(ids, containerId) {
+      const container = document.getElementById(containerId);
       for (const id of ids) {
         const user = await loadUser(id);
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <img src="${user.avatar}"
+          <img src="${user.avatar}" width="80">
+          <div>
+            <h2>${user.username}</h2>
+            <p><b>ID:</b> ${user.id}</p>
+            <p><b>Created:</b> ${user.created}</p>
+          </div>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    // IDs of admins
+    const adminIDs = [
+      "278452675941629952", // example admin
+      "390450884603150336"  // example admin
+    ];
+
+    // IDs of middlemen
+    const mmIDs = [
+      "123456789012345678", // replace with real middleman IDs
+      "987654321098765432"
+    ];
+
+    showProfiles(adminIDs, "admin-cards");
+    showProfiles(mmIDs, "mm-cards");
+  </script>
+</body>
+</html>
