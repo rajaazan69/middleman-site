@@ -1,6 +1,6 @@
-
 import express from "express";
 import fetch from "node-fetch";
+import path from "path";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,8 +22,11 @@ async function fetchRoles() {
   return roles;
 }
 
-// Serve static files
+// --- Serve static files ---
 app.use(express.static("public"));
+
+// --- Serve transcripts folder ---
+app.use("/transcripts", express.static(path.join(process.cwd(), "public", "transcripts")));
 
 // --- Fetch guild member info only ---
 app.get("/api/user/:id", async (req, res) => {
