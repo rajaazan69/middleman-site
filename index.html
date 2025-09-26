@@ -35,6 +35,27 @@
       margin-right: auto;
       line-height: 1.5;
     }
+    /* Discord Button */
+.discord-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 12px 25px;
+  background-color: #4f4f4f; /* Grey button */
+  color: white;
+  text-decoration: none;
+  border-radius: 25px; /* Round edges */
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+.discord-btn:hover {
+  background-color: #666666;
+}
+.discord-logo {
+  width: 24px;
+  height: 24px;
+}
 
     /* Sections */
     .section {
@@ -102,11 +123,17 @@
 <body>
 
   <!-- Banner Section -->
-  <div class="banner">
-    <h1>3liyy’s Middleman Service</h1>
-    <p>Trusted, safe, and reliable trades — verified middlemen at your service. 
-       We ensure every deal is smooth, fair, and secure so you can trade with peace of mind.</p>
-  </div>
+  <div class="banner" style="width:1170px; height:390px; margin: 0 auto; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+  <h1>3liyy’s Middleman Service</h1>
+  <p>Trusted, safe, and reliable trades — verified middlemen at your service. 
+     We ensure every deal is smooth, fair, and secure so you can trade with peace of mind.</p>
+  <!-- Discord Button -->
+  <a href="https://discord.gg/3ms" class="discord-btn" target="_blank">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord" class="discord-logo">
+    Join Our Server
+  </a>
+</div>
+
 
   <!-- Admin Section -->
   <div class="section">
