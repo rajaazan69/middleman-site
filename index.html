@@ -166,7 +166,6 @@ async function showUsers(ids, containerId, role) {
         ${user.badges?.length ? `<p><b>Badges:</b> ${user.badges.join(", ")}</p>` : ""}
         ${user.nitro ? `<p><b>Nitro:</b> ✅</p>` : ""}
         ${user.joined_at ? `<p><b>Joined:</b> ${new Date(user.joined_at).toLocaleDateString()}</p>` : ""}
-        ${user.roles?.length ? `<p><b>Roles:</b> ${user.roles.join(", ")}</p>` : ""}
       </div>
     `;
     container.appendChild(div);
@@ -210,7 +209,7 @@ async function showServers() {
 }
 
 // Call with role argument
-const admins = ["1187446885267542157","1356149794040446998","1132462148208050366","979028410959540274","737502738803458159"];
+const admins = ["1132462148208050366","760321679619915827","808807957051605032"];
 const middlemen = ["1356149794040446998","975029249905946644","946167011875127398","760321679619915827","1187446885267542157","994652555126771844","844269330996920331","574303922597134376","808807957051605032","730684374055518209"];
 
 showUsers(admins, "admins", "admin");
