@@ -3,32 +3,17 @@ import fetch from "node-fetch";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 const GUILD_ID = "1333004910513623112";
 
-// --- Badge Mapping ---
-const BADGES = {
-  1 << 0: "Discord Staff",
-  1 << 1: "Partner",
-  1 << 2: "HypeSquad Events",
-  1 << 3: "Bug Hunter Level 1",
-  1 << 6: "HypeSquad Bravery",
-  1 << 7: "HypeSquad Brilliance",
-  1 << 8: "HypeSquad Balance",
-  1 << 9: "Early Supporter",
-  1 << 14: "Bug Hunter Level 2",
-  1 << 17: "Verified Bot",
-  1 << 18: "Early Verified Bot Developer",
-  1 << 22: "Certified Moderator",
-  1 << 25: "Active Developer"
-};
+// --- Badge mapping is now ignored, since we can't fetch arbitrary badges ---
+const BADGES = {}; // left empty, Discord API no longer allows fetching for other users
 
-// --- Cache roles so we don’t spam API ---
+// --- Cache roles to avoid multiple API calls ---
 let roleCache = null;
 async function fetchRoles() {
   if (roleCache) return roleCache;
   const res = await fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/roles`, {
-    headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` }
+    headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
   });
   if (!res.ok) return [];
   const roles = await res.json();
@@ -36,70 +21,60 @@ async function fetchRoles() {
   return roles;
 }
 
-// Serve static
+// Serve static files
 app.use(express.static("public"));
 
+// --- Fetch guild member info only ---
 app.get("/api/user/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Basic profile
-    const userResponse = await fetch(`https://discord.com/api/v10/users/${id}`, {
-      headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
-    });
-    if (!userResponse.ok) {
-      return res.status(userResponse.status).json({ error: "Failed to fetch user" });
-    }
-    const user = await userResponse.json();
-
-    // Member info
-    let member = null;
     const memberResponse = await fetch(
       `https://discord.com/api/v10/guilds/${GUILD_ID}/members/${id}`,
-      { headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` } }
+      {
+        headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
+      }
     );
-    if (memberResponse.ok) {
-      member = await memberResponse.json();
+
+    if (!memberResponse.ok) {
+      return res.json({
+        username: "Unknown",
+        discriminator: "0000",
+        id,
+        avatar: "https://cdn.discordapp.com/embed/avatars/0.png",
+        badges: [],
+        nitro: false,
+        joined_at: null,
+        roles: []
+      });
     }
 
-    // Convert flags → badge names
-    const badges = [];
-    for (const [flagStr, name] of Object.entries(BADGES)) {
-  const flag = Number(flagStr);
-  if ((user.public_flags & flag) === flag) badges.push(name);
-}
-
-    // Convert role IDs → role names
-    let roleNames = [];
-    if (member?.roles?.length) {
-      const allRoles = await fetchRoles();
-      roleNames = member.roles
-        .map(rid => allRoles.find(r => r.id === rid)?.name)
-        .filter(Boolean);
-    }
+    const member = await memberResponse.json();
+    const allRoles = await fetchRoles();
+    const roleNames = member.roles
+      .map(rid => allRoles.find(r => r.id === rid)?.name)
+      .filter(Boolean);
 
     res.json({
-      id: user.id,
-      username: user.username,
-      discriminator: user.discriminator,
-      avatar: user.avatar
-        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+      id: member.user.id,
+      username: member.user.username,
+      discriminator: member.user.discriminator,
+      avatar: member.user.avatar
+        ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
         : "https://cdn.discordapp.com/embed/avatars/0.png",
-      banner: user.banner
-        ? `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.png`
-        : null,
-      nitro: user.premium_type > 0, // true/false
-      badges,
-      joined_at: member?.joined_at || null,
+      badges: [], // cannot fetch reliably
+      nitro: false, // cannot fetch reliably
+      joined_at: member.joined_at || null,
       roles: roleNames,
     });
+
   } catch (err) {
     console.error("API error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// Guild/server info
+// --- Fetch guild/server info ---
 app.get("/api/server/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -120,6 +95,7 @@ app.get("/api/server/:id", async (req, res) => {
         ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
         : "https://cdn.discordapp.com/embed/avatars/1.png",
     });
+
   } catch (err) {
     console.error("API error:", err);
     res.status(500).json({ error: "Server error" });
