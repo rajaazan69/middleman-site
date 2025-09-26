@@ -16,10 +16,19 @@
 
     /* Banner */
     .banner {
+      width: 1170px;
+      height: 390px;
+      margin: 0 auto;
       background: linear-gradient(135deg, #8b0000, #ff0000);
       color: #fff;
-      padding: 60px 20px;
       border-bottom: 4px solid #000;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* vertical center */
+      align-items: center;     /* horizontal center */
+      text-align: center;
+      padding: 20px;
     }
     .banner h1 {
       margin: 0;
@@ -31,31 +40,30 @@
       margin-top: 15px;
       font-size: 1.3em;
       max-width: 650px;
-      margin-left: auto;
-      margin-right: auto;
       line-height: 1.5;
     }
-    /* Discord Button */
-.discord-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-  padding: 12px 25px;
-  background-color: #4f4f4f; /* Grey button */
-  color: white;
-  text-decoration: none;
-  border-radius: 25px; /* Round edges */
-  font-weight: bold;
-  transition: background 0.3s ease;
-}
-.discord-btn:hover {
-  background-color: #666666;
-}
-.discord-logo {
-  width: 24px;
-  height: 24px;
-}
+
+    /* Discord Button in Banner */
+    .discord-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 12px 25px;
+      background-color: #4f4f4f; /* Grey button */
+      color: white;
+      text-decoration: none;
+      border-radius: 25px; /* Round edges */
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    .discord-btn:hover {
+      background-color: #666666;
+    }
+    .discord-logo {
+      width: 24px;
+      height: 24px;
+    }
 
     /* Sections */
     .section {
@@ -103,37 +111,21 @@
       font-size: 0.9em;
       color: #bbb;
     }
-
-    /* Button */
-    .btn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 8px 15px;
-      background: linear-gradient(135deg, #8b0000, #ff0000);
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      transition: background 0.3s ease;
-    }
-    .btn:hover {
-      background: linear-gradient(135deg, #ff0000, #8b0000);
-    }
   </style>
 </head>
 <body>
 
   <!-- Banner Section -->
-  <div class="banner" style="width:1170px; height:390px; margin: 0 auto; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-  <h1>3liyy’s Middleman Service</h1>
-  <p>Trusted, safe, and reliable trades — verified middlemen at your service. 
-     We ensure every deal is smooth, fair, and secure so you can trade with peace of mind.</p>
-  <!-- Discord Button -->
-  <a href="https://discord.gg/3ms" class="discord-btn" target="_blank">
-    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord" class="discord-logo">
-    Join Our Server
-  </a>
-</div>
-
+  <div class="banner">
+    <h1>3liyy’s Middleman Service</h1>
+    <p>Trusted, safe, and reliable trades — verified middlemen at your service. 
+       We ensure every deal is smooth, fair, and secure so you can trade with peace of mind.</p>
+    <!-- Discord Button -->
+    <a href="https://discord.gg/3ms" class="discord-btn" target="_blank">
+      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord" class="discord-logo">
+      Join Our Server
+    </a>
+  </div>
 
   <!-- Admin Section -->
   <div class="section">
@@ -176,8 +168,6 @@ async function loadUser(id) {
 
 async function showUsers(ids, containerId, role) {
   const container = document.getElementById(containerId);
-
-  // Remove duplicate IDs so one user doesn't appear twice
   const uniqueIds = [...new Set(ids)];
 
   for (const id of uniqueIds) {
@@ -228,20 +218,22 @@ async function showServers() {
       <div>
         <h2>${server.name}</h2>
         <p><b>ID:</b> ${server.id}</p>
-        <a href="https://discord.gg/3ms" class="btn">Join Server</a>
+        <a href="https://discord.gg/3ms" class="discord-btn" target="_blank">
+          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord" class="discord-logo">
+          Join Our Server
+        </a>
       </div>
     `;
     container.appendChild(div);
   }
 }
 
-// Call with role argument
 const admins = ["1132462148208050366","760321679619915827","808807957051605032","1187446885267542157"];
 const middlemen = ["1356149794040446998","975029249905946644","946167011875127398","760321679619915827","1187446885267542157","994652555126771844","844269330996920331","574303922597134376","808807957051605032","730684374055518209","1148546295519248404"];
 
 showUsers(admins, "admins", "admin");
 showUsers(middlemen, "middlemen", "middleman");
 showServers();
-</script>
+  </script>
 </body>
 </html>
