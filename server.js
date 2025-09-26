@@ -68,7 +68,6 @@ app.get("/api/user/:id", async (req, res) => {
   const flag = Number(flagStr);
   if ((user.public_flags & flag) === flag) badges.push(name);
 }
-    }
 
     // Convert role IDs → role names
     let roleNames = [];
