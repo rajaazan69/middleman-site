@@ -34,13 +34,13 @@ client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
   try {
     const guild = await client.guilds.fetch(GUILD_ID);
-    await guild.members.fetch(); // fetch all members
+    // fetch members in batches
+    await guild.members.fetch({ force: true });
     guild.members.cache.forEach(member => {
       memberCache[member.id] = member;
     });
     console.log(`Cached ${Object.keys(memberCache).length} members`);
 
-    // fetch roles
     await fetchRoles(guild);
   } catch (err) {
     console.error("Failed to fetch members at startup:", err);
@@ -58,9 +58,49 @@ client.on("guildMemberRemove", member => {
 // --- API route: get user info ---
 app.get("/api/user/:id", async (req, res) => {
   const { id } = req.params;
-  const member = memberCache[id];
+  let member = memberCache[id];
 
-  if (!member) {
+  try {
+    if (!member) {
+      // fetch member via REST if not cached
+      const guild = await client.guilds.fetch(GUILD_ID);
+      member = await guild.members.fetch(id).catch(() => null);
+      if (member) memberCache[id] = member;
+    }
+
+    if (!member) {
+      // fallback
+      return res.json({
+        username: "Unknown",
+        discriminator: "0000",
+        id,
+        avatar: "https://cdn.discordapp.com/embed/avatars/0.png",
+        badges: [],
+        nitro: false,
+        joined_at: null,
+        roles: []
+      });
+    }
+
+    const allRoles = await fetchRoles(member.guild);
+    const roleNames = member.roles.cache
+      .map(r => allRoles.find(ar => ar.id === r.id)?.name)
+      .filter(Boolean);
+
+    return res.json({
+      id: member.user.id,
+      username: member.user.username,
+      discriminator: member.user.discriminator,
+      avatar: member.user.avatar
+        ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
+        : "https://cdn.discordapp.com/embed/avatars/0.png",
+      badges: [],
+      nitro: false,
+      joined_at: member.joinedAt ? member.joinedAt.toISOString() : null,
+      roles: roleNames,
+    });
+  } catch (err) {
+    console.error("API error:", err);
     return res.json({
       username: "Unknown",
       discriminator: "0000",
@@ -72,24 +112,6 @@ app.get("/api/user/:id", async (req, res) => {
       roles: []
     });
   }
-
-  const allRoles = await fetchRoles(member.guild);
-  const roleNames = member.roles.cache
-    .map(r => allRoles.find(ar => ar.id === r.id)?.name)
-    .filter(Boolean);
-
-  res.json({
-    id: member.user.id,
-    username: member.user.username,
-    discriminator: member.user.discriminator,
-    avatar: member.user.avatar
-      ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
-      : "https://cdn.discordapp.com/embed/avatars/0.png",
-    badges: [],
-    nitro: false,
-    joined_at: member.joinedAt ? member.joinedAt.toISOString() : null,
-    roles: roleNames,
-  });
 });
 
 // --- API route: get server info ---
