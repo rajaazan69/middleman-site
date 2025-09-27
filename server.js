@@ -33,7 +33,7 @@ app.get("/api/user/:id", async (req, res) => {
     const guild = client.guilds.cache.get(GUILD_ID);
     if (!guild) return res.status(500).json({ error: "Guild not found" });
 
-    // Try to fetch from cache, fallback to API
+    // Try to fetch from cache or API
     let member = guild.members.cache.get(id);
     if (!member) {
       try {
@@ -53,22 +53,46 @@ app.get("/api/user/:id", async (req, res) => {
         nitro: false,
         joined_at: null,
         roles: [],
+        banner: null,
+        guild_avatar: null,
+        guild_banner: null,
+        guild_color: null,
       });
     }
 
-    const roleNames = member.roles.cache.map(r => r.name).filter(Boolean);
+    // Fetch full user for flags & banner
+    const fullUser = await member.user.fetch(true);
+    const badges = fullUser.flags?.toArray() || [];
+
+    const avatar = member.user.avatar
+      ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
+      : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+    const banner = fullUser.banner
+      ? `https://cdn.discordapp.com/banners/${fullUser.id}/${fullUser.banner}.png?size=1024`
+      : null;
+
+    const guildAvatar = member.avatar
+      ? `https://cdn.discordapp.com/guilds/${guild.id}/users/${member.id}/avatars/${member.avatar}.png`
+      : null;
+
+    const guildBanner = member.banner
+      ? `https://cdn.discordapp.com/guilds/${guild.id}/users/${member.id}/banners/${member.banner}.png`
+      : null;
 
     res.json({
       id: member.user.id,
       username: member.user.username,
       discriminator: member.user.discriminator,
-      avatar: member.user.avatar
-        ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
-        : "https://cdn.discordapp.com/embed/avatars/0.png",
-      badges: [], // cannot fetch reliably
-      nitro: false, // cannot fetch reliably
+      avatar,
+      banner,
+      badges,
+      nitro: !!member.premiumSince, // rough Nitro detection
       joined_at: member.joinedAt || null,
-      roles: roleNames,
+      roles: member.roles.cache.map(r => r.name).filter(Boolean),
+      guild_avatar: guildAvatar,
+      guild_banner: guildBanner,
+      guild_color: member.hexAccentColor || null,
     });
   } catch (err) {
     console.error("API error:", err);
