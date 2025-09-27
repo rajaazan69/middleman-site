@@ -7,8 +7,11 @@ const GUILD_ID = "1333004910513623112";
 
 // --- Discord client ---
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
-  partials: [Partials.GuildMember]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers, // needed for fetching members
+  ],
+  partials: [Partials.GuildMember],
 });
 
 // --- Serve static files ---
@@ -30,8 +33,16 @@ app.get("/api/user/:id", async (req, res) => {
     const guild = client.guilds.cache.get(GUILD_ID);
     if (!guild) return res.status(500).json({ error: "Guild not found" });
 
-    // Fetch member from cache or API
-    const member = await guild.members.fetch(id).catch(() => null);
+    // Try to fetch from cache, fallback to API
+    let member = guild.members.cache.get(id);
+    if (!member) {
+      try {
+        member = await guild.members.fetch(id);
+      } catch {
+        member = null;
+      }
+    }
+
     if (!member) {
       return res.json({
         username: "Unknown",
@@ -41,7 +52,7 @@ app.get("/api/user/:id", async (req, res) => {
         badges: [],
         nitro: false,
         joined_at: null,
-        roles: []
+        roles: [],
       });
     }
 
@@ -53,15 +64,14 @@ app.get("/api/user/:id", async (req, res) => {
       discriminator: member.user.discriminator,
       avatar: member.user.avatar
         ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
-        : `https://cdn.discordapp.com/embed/avatars/0.png`,
+        : "https://cdn.discordapp.com/embed/avatars/0.png",
       badges: [], // cannot fetch reliably
       nitro: false, // cannot fetch reliably
       joined_at: member.joinedAt || null,
       roles: roleNames,
     });
-
   } catch (err) {
-    console.error(err);
+    console.error("API error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -81,29 +91,32 @@ app.get("/api/server/:id", async (req, res) => {
         ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
         : "https://cdn.discordapp.com/embed/avatars/1.png",
     });
-
   } catch (err) {
-    console.error(err);
+    console.error("API error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
 // --- Start bot and server ---
 client.once("ready", async () => {
-  console.log(`Logged in as ${client.user.tag}`);
+  console.log(`✅ Logged in as ${client.user.tag}`);
 
-  // Cache all members for the guild to prevent unknowns
   const guild = client.guilds.cache.get(GUILD_ID);
   if (guild) {
-    await guild.members.fetch();
-    console.log("All members cached");
+    try {
+      console.log("⏳ Fetching all members...");
+      await guild.members.fetch(); // pulls all ~3000 members
+      console.log(`✅ Cached ${guild.members.cache.size} members`);
+    } catch (err) {
+      console.error("❌ Failed to fetch members:", err);
+    }
   } else {
-    console.warn("Guild not found on ready event");
+    console.warn("⚠️ Guild not found on ready event");
   }
 
   // Start Express server
   app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`🌐 Server running on http://localhost:${PORT}`);
   });
 });
 
