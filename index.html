@@ -117,9 +117,13 @@
     }
 
     .badges {
-      margin-top: 5px;
-      font-size: 0.85em;
-      color: #ffd700;
+      margin-top: 6px;
+    }
+    .badges img {
+      width: 20px;
+      height: 20px;
+      margin: 0 2px;
+      vertical-align: middle;
     }
 
     /* Responsive */
@@ -175,6 +179,22 @@
   </div>
 
   <script>
+const BADGE_ICONS = {
+  ActiveDeveloper: "https://discord.com/assets/8a88d638c586935fa693f9d1c3b68d4d.svg",
+  BugHunterLevel1: "https://discord.com/assets/25a04bd987838e7fcad6a7d4366e0d3a.svg",
+  BugHunterLevel2: "https://discord.com/assets/46f6c3811e90a33b4a8d1782e5e598e5.svg",
+  CertifiedModerator: "https://discord.com/assets/e9fc0b1e42659c1f8b915b0314e54b21.svg",
+  HypeSquadOnlineHouse1: "https://discord.com/assets/f0499e8a30e6c5d8993f35c4d4e1c8a5.svg",
+  HypeSquadOnlineHouse2: "https://discord.com/assets/53a3a1dc7aae5d186d29a30e327b11c6.svg",
+  HypeSquadOnlineHouse3: "https://discord.com/assets/106c6b722b3f5f57dfc2896d799af79f.svg",
+  Hypesquad: "https://discord.com/assets/5596bf197392f4e12e28e2f9d6d1fdf6.svg",
+  Partner: "https://discord.com/assets/34306011e46e87f8ef25f3415d3e0fad.svg",
+  PremiumEarlySupporter: "https://discord.com/assets/23e59d799436a73c024819f84ea0b627.svg",
+  Staff: "https://discord.com/assets/48d5bdcffe1e7840c3bdb2c8c3d6b91b.svg",
+  VerifiedBot: "https://discord.com/assets/e04ce699e3f0353a7c41c5d7a62ec8ed.svg",
+  VerifiedDeveloper: "https://discord.com/assets/6f3a1d26e1b1c6d1df1a1e5d2c4e9f14.svg",
+};
+
 async function loadUser(id) {
   try {
     const res = await fetch(`/api/user/${id}`);
@@ -189,18 +209,21 @@ async function loadUser(id) {
       avatar: "https://cdn.discordapp.com/embed/avatars/0.png",
       badges: [],
       nitro: false,
-      joined_at: null,
-      roles: []
+      joined_at: null
     };
   }
 }
 
-async function showUsers(ids, containerId, role) {
+async function showUsers(ids, containerId) {
   const container = document.getElementById(containerId);
   const uniqueIds = [...new Set(ids)];
 
   for (const id of uniqueIds) {
     const user = await loadUser(id);
+
+    const badgeIcons = (user.badges || [])
+      .map(b => BADGE_ICONS[b] ? `<img src="${BADGE_ICONS[b]}" alt="${b}" title="${b}">` : "")
+      .join("");
 
     const div = document.createElement("div");
     div.className = "card";
@@ -209,8 +232,7 @@ async function showUsers(ids, containerId, role) {
       <img src="${user.avatar}" class="card-avatar">
       <h2>${user.username}${user.discriminator !== "0" ? "#" + user.discriminator : ""}</h2>
       <p><b>ID:</b> ${user.id}</p>
-      ${user.roles?.length ? `<p><b>Roles:</b> ${user.roles.join(", ")}</p>` : ""}
-      ${user.badges?.length ? `<div class="badges">🎖️ ${user.badges.join(", ")}</div>` : ""}
+      ${badgeIcons ? `<div class="badges">${badgeIcons}</div>` : ""}
       ${user.nitro ? `<p>✨ Nitro User</p>` : ""}
       ${user.joined_at ? `<p><b>Joined:</b> ${new Date(user.joined_at).toLocaleDateString()}</p>` : ""}
     `;
@@ -247,7 +269,7 @@ async function showServers() {
       <div>
         <h2>${server.name}</h2>
         <p><b>ID:</b> ${server.id}</p>
-        <a href="https://discord.gg/vCvMXzfME4" class="btn">Join Server</a>
+        <a href="https://discord.gg/vCvMXzfME4" class="discord-btn">Join Server</a>
       </div>
     `;
     container.appendChild(div);
@@ -257,8 +279,8 @@ async function showServers() {
 const admins = ["1132462148208050366","760321679619915827","808807957051605032","1187446885267542157"];
 const middlemen = ["1356149794040446998","975029249905946644","946167011875127398","760321679619915827","1187446885267542157","994652555126771844","844269330996920331","574303922597134376","808807957051605032","730684374055518209","1148546295519248404","662290636069666888"];
 
-showUsers(admins, "admins", "admin");
-showUsers(middlemen, "middlemen", "middleman");
+showUsers(admins, "admins");
+showUsers(middlemen, "middlemen");
 showServers();
 </script>
 </body>
