@@ -1,37 +1,36 @@
-
 import express from "express";
-import fetch from "node-fetch";
+import { Client, GatewayIntentBits, Partials } from "discord.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const GUILD_ID = "1333004910513623112";
 
-// --- Badge mapping is now ignored, since we can't fetch arbitrary badges ---
-const BADGES = {}; // left empty, Discord API no longer allows fetching for other users
+// --- Discord client ---
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+  partials: [Partials.GuildMember]
+});
+
+// --- Serve static files ---
+app.use(express.static("public"));
 
 // --- Cache roles to avoid multiple API calls ---
 let roleCache = null;
-async function fetchRoles() {
+async function fetchRoles(guild) {
   if (roleCache) return roleCache;
-  const res = await fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/roles`, {
-    headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
-  });
-  if (!res.ok) return [];
-  const roles = await res.json();
-  roleCache = roles;
-  return roles;
+  roleCache = guild.roles.cache.map(r => ({ id: r.id, name: r.name }));
+  return roleCache;
 }
 
-// Serve static files
-app.use(express.static("public"));
-
-// --- Fetch guild member info only ---
+// --- Fetch guild member info ---
 app.get("/api/user/:id", async (req, res) => {
   const { id } = req.params;
+
   try {
     const guild = client.guilds.cache.get(GUILD_ID);
     if (!guild) return res.status(500).json({ error: "Guild not found" });
 
+    // Fetch member from cache or API
     const member = await guild.members.fetch(id).catch(() => null);
     if (!member) {
       return res.json({
@@ -54,12 +53,13 @@ app.get("/api/user/:id", async (req, res) => {
       discriminator: member.user.discriminator,
       avatar: member.user.avatar
         ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
-        : "https://cdn.discordapp.com/embed/avatars/0.png",
-      badges: [],
-      nitro: false,
+        : `https://cdn.discordapp.com/embed/avatars/0.png`,
+      badges: [], // cannot fetch reliably
+      nitro: false, // cannot fetch reliably
       joined_at: member.joinedAt || null,
       roles: roleNames,
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
@@ -71,15 +71,9 @@ app.get("/api/server/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const response = await fetch(`https://discord.com/api/v10/guilds/${id}`, {
-      headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
-    });
+    const guild = client.guilds.cache.get(id);
+    if (!guild) return res.status(404).json({ error: "Guild not found" });
 
-    if (!response.ok) {
-      return res.status(response.status).json({ error: "Failed to fetch server" });
-    }
-
-    const guild = await response.json();
     res.json({
       id: guild.id,
       name: guild.name,
@@ -89,11 +83,28 @@ app.get("/api/server/:id", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("API error:", err);
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// --- Start bot and server ---
+client.once("ready", async () => {
+  console.log(`Logged in as ${client.user.tag}`);
+
+  // Cache all members for the guild to prevent unknowns
+  const guild = client.guilds.cache.get(GUILD_ID);
+  if (guild) {
+    await guild.members.fetch();
+    console.log("All members cached");
+  } else {
+    console.warn("Guild not found on ready event");
+  }
+
+  // Start Express server
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
 });
+
+client.login(process.env.BOT_TOKEN);
