@@ -28,16 +28,12 @@ app.use(express.static("public"));
 // --- Fetch guild member info only ---
 app.get("/api/user/:id", async (req, res) => {
   const { id } = req.params;
-
   try {
-    const memberResponse = await fetch(
-      `https://discord.com/api/v10/guilds/${GUILD_ID}/members/${id}`,
-      {
-        headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
-      }
-    );
+    const guild = client.guilds.cache.get(GUILD_ID);
+    if (!guild) return res.status(500).json({ error: "Guild not found" });
 
-    if (!memberResponse.ok) {
+    const member = await guild.members.fetch(id).catch(() => null);
+    if (!member) {
       return res.json({
         username: "Unknown",
         discriminator: "0000",
@@ -50,11 +46,7 @@ app.get("/api/user/:id", async (req, res) => {
       });
     }
 
-    const member = await memberResponse.json();
-    const allRoles = await fetchRoles();
-    const roleNames = member.roles
-      .map(rid => allRoles.find(r => r.id === rid)?.name)
-      .filter(Boolean);
+    const roleNames = member.roles.cache.map(r => r.name).filter(Boolean);
 
     res.json({
       id: member.user.id,
@@ -63,14 +55,13 @@ app.get("/api/user/:id", async (req, res) => {
       avatar: member.user.avatar
         ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
         : "https://cdn.discordapp.com/embed/avatars/0.png",
-      badges: [], // cannot fetch reliably
-      nitro: false, // cannot fetch reliably
-      joined_at: member.joined_at || null,
+      badges: [],
+      nitro: false,
+      joined_at: member.joinedAt || null,
       roles: roleNames,
     });
-
   } catch (err) {
-    console.error("API error:", err);
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
