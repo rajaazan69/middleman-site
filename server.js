@@ -17,6 +17,21 @@ const client = new Client({
 // --- Serve static files ---
 app.use(express.static("public"));
 
+// --- Badge map (Discord flags → icons) ---
+const BADGE_MAP = {
+  Staff: "https://cdn.discordapp.com/badge-icons/4f3d53b1e85b1b846e42f2be1c6c4b6e.png",
+  Partner: "https://cdn.discordapp.com/badge-icons/9dff6ab65e0d5f688d04d11f45abf9da.png",
+  BugHunterLevel1: "https://cdn.discordapp.com/badge-icons/8f744b6e8f5a2c9a4d01cbdde46b4405.png",
+  BugHunterLevel2: "https://cdn.discordapp.com/badge-icons/da15f03c13c5a2b74e3c7b9051f0c43e.png",
+  HypeSquadOnlineHouse1: "https://cdn.discordapp.com/badge-icons/6df5892e0f35b051f8b61e442e483c1d.png", // Bravery
+  HypeSquadOnlineHouse2: "https://cdn.discordapp.com/badge-icons/9e4eb4eb8f1a2e7d18e9f73e6e0c3df9.png", // Brilliance
+  HypeSquadOnlineHouse3: "https://cdn.discordapp.com/badge-icons/0e4080e2ab4e2b0f3a566d8e97d5fdbd.png", // Balance
+  Hypesquad: "https://cdn.discordapp.com/badge-icons/6df5892e0f35b051f8b61e442e483c1d.png",
+  EarlySupporter: "https://cdn.discordapp.com/badge-icons/7060786766c9c840eb3019e725d04baa.png",
+  CertifiedModerator: "https://cdn.discordapp.com/badge-icons/9f6af7d8b5a2ff7e7a2b0f91c1b4c25a.png",
+  ActiveDeveloper: "https://cdn.discordapp.com/badge-icons/6bdc42827a38498929a4920da12695d9.png",
+};
+
 // --- Fetch guild member info ---
 app.get("/api/user/:id", async (req, res) => {
   const { id } = req.params;
@@ -51,7 +66,12 @@ app.get("/api/user/:id", async (req, res) => {
     // Fetch full user object for badges & banner
     const fullUser = await member.user.fetch(true);
 
-    const badges = fullUser.flags?.toArray() || [];
+    // Convert flags to badge objects with icons
+    const badges = (fullUser.flags?.toArray() || []).map(flag => ({
+      id: flag,
+      name: flag,
+      icon: BADGE_MAP[flag] || null,
+    }));
 
     const avatar = member.user.avatar
       ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png?size=1024`
