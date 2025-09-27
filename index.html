@@ -39,7 +39,7 @@
       line-height: 1.5;
     }
 
-    /* Discord Button under banner */
+    /* Discord Button */
     .discord-btn {
       display: inline-flex;
       align-items: center;
@@ -78,8 +78,11 @@
       background: #1a1a1a;
       border: 1px solid #333;
       border-radius: 12px;
-      margin: 20px auto;
-      width: 360px;
+      margin: 20px;
+      width: 320px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
       box-shadow: 0 4px 12px rgba(0,0,0,0.5);
       text-align: center;
       overflow: hidden;
@@ -116,16 +119,6 @@
       color: #bbb;
     }
 
-    .badges {
-      margin-top: 6px;
-    }
-    .badges img {
-      width: 20px;
-      height: 20px;
-      margin: 0 2px;
-      vertical-align: middle;
-    }
-
     /* Responsive */
     @media(max-width: 400px) {
       .banner h1 {
@@ -147,14 +140,14 @@
 </head>
 <body>
 
-  <!-- Banner Section -->
+  <!-- Banner -->
   <div class="banner">
     <h1>3liyy’s Middleman Service</h1>
     <p>Trusted, safe, and reliable trades — verified middlemen at your service. 
        We ensure every deal is smooth, fair, and secure so you can trade with peace of mind.</p>
   </div>
 
-  <!-- Discord Button under banner -->
+  <!-- Discord Button -->
   <a href="https://discord.gg/vCvMXzfME4" class="discord-btn" target="_blank">
     <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord" class="discord-logo">
     Join Our Server
@@ -179,22 +172,6 @@
   </div>
 
   <script>
-const BADGE_ICONS = {
-  ActiveDeveloper: "https://discord.com/assets/8a88d638c586935fa693f9d1c3b68d4d.svg",
-  BugHunterLevel1: "https://discord.com/assets/25a04bd987838e7fcad6a7d4366e0d3a.svg",
-  BugHunterLevel2: "https://discord.com/assets/46f6c3811e90a33b4a8d1782e5e598e5.svg",
-  CertifiedModerator: "https://discord.com/assets/e9fc0b1e42659c1f8b915b0314e54b21.svg",
-  HypeSquadOnlineHouse1: "https://discord.com/assets/f0499e8a30e6c5d8993f35c4d4e1c8a5.svg",
-  HypeSquadOnlineHouse2: "https://discord.com/assets/53a3a1dc7aae5d186d29a30e327b11c6.svg",
-  HypeSquadOnlineHouse3: "https://discord.com/assets/106c6b722b3f5f57dfc2896d799af79f.svg",
-  Hypesquad: "https://discord.com/assets/5596bf197392f4e12e28e2f9d6d1fdf6.svg",
-  Partner: "https://discord.com/assets/34306011e46e87f8ef25f3415d3e0fad.svg",
-  PremiumEarlySupporter: "https://discord.com/assets/23e59d799436a73c024819f84ea0b627.svg",
-  Staff: "https://discord.com/assets/48d5bdcffe1e7840c3bdb2c8c3d6b91b.svg",
-  VerifiedBot: "https://discord.com/assets/e04ce699e3f0353a7c41c5d7a62ec8ed.svg",
-  VerifiedDeveloper: "https://discord.com/assets/6f3a1d26e1b1c6d1df1a1e5d2c4e9f14.svg",
-};
-
 async function loadUser(id) {
   try {
     const res = await fetch(`/api/user/${id}`);
@@ -207,8 +184,8 @@ async function loadUser(id) {
       discriminator: "0000",
       id,
       avatar: "https://cdn.discordapp.com/embed/avatars/0.png",
-      badges: [],
-      nitro: false,
+      banner: null,
+      banner_color: "#222",
       joined_at: null
     };
   }
@@ -221,10 +198,6 @@ async function showUsers(ids, containerId) {
   for (const id of uniqueIds) {
     const user = await loadUser(id);
 
-    const badgeIcons = (user.badges || [])
-      .map(b => BADGE_ICONS[b] ? `<img src="${BADGE_ICONS[b]}" alt="${b}" title="${b}">` : "")
-      .join("");
-
     const div = document.createElement("div");
     div.className = "card";
     div.innerHTML = `
@@ -232,8 +205,6 @@ async function showUsers(ids, containerId) {
       <img src="${user.avatar}" class="card-avatar">
       <h2>${user.username}${user.discriminator !== "0" ? "#" + user.discriminator : ""}</h2>
       <p><b>ID:</b> ${user.id}</p>
-      ${badgeIcons ? `<div class="badges">${badgeIcons}</div>` : ""}
-      ${user.nitro ? `<p>✨ Nitro User</p>` : ""}
       ${user.joined_at ? `<p><b>Joined:</b> ${new Date(user.joined_at).toLocaleDateString()}</p>` : ""}
     `;
     container.appendChild(div);
