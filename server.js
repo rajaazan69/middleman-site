@@ -17,14 +17,6 @@ const client = new Client({
 // --- Serve static files ---
 app.use(express.static("public"));
 
-// --- Cache roles to avoid multiple API calls ---
-let roleCache = null;
-async function fetchRoles(guild) {
-  if (roleCache) return roleCache;
-  roleCache = guild.roles.cache.map(r => ({ id: r.id, name: r.name }));
-  return roleCache;
-}
-
 // --- Fetch guild member info ---
 app.get("/api/user/:id", async (req, res) => {
   const { id } = req.params;
@@ -33,7 +25,7 @@ app.get("/api/user/:id", async (req, res) => {
     const guild = client.guilds.cache.get(GUILD_ID);
     if (!guild) return res.status(500).json({ error: "Guild not found" });
 
-    // Try to fetch from cache or API
+    // Try to fetch member
     let member = guild.members.cache.get(id);
     if (!member) {
       try {
@@ -52,32 +44,21 @@ app.get("/api/user/:id", async (req, res) => {
         badges: [],
         nitro: false,
         joined_at: null,
-        roles: [],
         banner: null,
-        guild_avatar: null,
-        guild_banner: null,
-        guild_color: null,
       });
     }
 
-    // Fetch full user for flags & banner
+    // Fetch full user object for badges & banner
     const fullUser = await member.user.fetch(true);
+
     const badges = fullUser.flags?.toArray() || [];
 
     const avatar = member.user.avatar
-      ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png`
+      ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png?size=1024`
       : "https://cdn.discordapp.com/embed/avatars/0.png";
 
     const banner = fullUser.banner
       ? `https://cdn.discordapp.com/banners/${fullUser.id}/${fullUser.banner}.png?size=1024`
-      : null;
-
-    const guildAvatar = member.avatar
-      ? `https://cdn.discordapp.com/guilds/${guild.id}/users/${member.id}/avatars/${member.avatar}.png`
-      : null;
-
-    const guildBanner = member.banner
-      ? `https://cdn.discordapp.com/guilds/${guild.id}/users/${member.id}/banners/${member.banner}.png`
       : null;
 
     res.json({
@@ -89,10 +70,6 @@ app.get("/api/user/:id", async (req, res) => {
       badges,
       nitro: !!member.premiumSince, // rough Nitro detection
       joined_at: member.joinedAt || null,
-      roles: member.roles.cache.map(r => r.name).filter(Boolean),
-      guild_avatar: guildAvatar,
-      guild_banner: guildBanner,
-      guild_color: member.hexAccentColor || null,
     });
   } catch (err) {
     console.error("API error:", err);
@@ -112,7 +89,7 @@ app.get("/api/server/:id", async (req, res) => {
       id: guild.id,
       name: guild.name,
       icon: guild.icon
-        ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
+        ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=1024`
         : "https://cdn.discordapp.com/embed/avatars/1.png",
     });
   } catch (err) {
